@@ -85,15 +85,21 @@ export class AuctionQuoteService {
       await product.save({ session });
       // Throw an error to test transaction rollback
       // throw new Error('This is a test error');
-
       response.success = true;
       response.code = Code.SUCCESS;
       response.data = { auctionQuote, tradingRecord };
       await session.commitTransaction();
     } catch (error) {
-      console.log(`[AuctionQuoteService] createQuote error`, error);
-      await session.abortTransaction();
       console.log(`[AuctionQuoteService] createQuote abortTransaction`);
+      try {
+        await session.abortTransaction();
+        console.log(`[AuctionQuoteService] createQuote abortTransaction`);
+      } catch (abortError) {
+        console.error(
+          `[AuctionQuoteService] Error aborting transaction`,
+          abortError,
+        );
+      }
       response.reason = error.message;
     } finally {
       session.endSession();

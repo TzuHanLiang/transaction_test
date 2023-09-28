@@ -63,7 +63,7 @@ export class ProductService {
         convertCreateDtoToEntity(createProductDto),
       );
       const result = await createdProduct.save({ session });
-      console.log(`[ProductService] create result`, result);
+      console.log(`[ProductService] createProduct result`, result);
       // Throw an error to test transaction rollback
       // throw new Error('This is a test error');
       response.success = true;
@@ -74,11 +74,19 @@ export class ProductService {
       });
       await session.commitTransaction();
     } catch (error) {
-      console.log(`[ProductService] create error`, error);
-      await session.abortTransaction();
+      console.log(`[ProductService] createProduct abortTransaction`);
+      try {
+        await session.abortTransaction();
+        console.log(`[ProductService] createProduct abortTransaction`);
+      } catch (abortError) {
+        console.error(
+          `[ProductService] Error aborting transaction`,
+          abortError,
+        );
+      }
       response.reason = error.message;
     } finally {
-      console.log(`[ProductService] create endSession`);
+      console.log(`[ProductService] createProduct endSession`);
       session.endSession();
     }
     return response;
@@ -112,11 +120,19 @@ export class ProductService {
       });
       await session.commitTransaction();
     } catch (error) {
-      console.log(`[ProductService] update error`, error);
-      await session.abortTransaction();
+      console.log(`[ProductService] updateProduct abortTransaction`);
+      try {
+        await session.abortTransaction();
+        console.log(`[ProductService] updateProduct abortTransaction`);
+      } catch (abortError) {
+        console.error(
+          `[ProductService] Error aborting transaction`,
+          abortError,
+        );
+      }
       response.reason = error.message;
     } finally {
-      console.log(`[ProductService] update endSession`);
+      console.log(`[ProductService] updateProduct endSession`);
       session.endSession();
     }
     return response;
@@ -140,11 +156,19 @@ export class ProductService {
       response.reason = 'Product deleted successfully';
       await session.commitTransaction();
     } catch (error) {
-      console.log(`[ProductService] delete error`, error);
-      await session.abortTransaction();
+      console.log(`[ProductService] deleteProduct abortTransaction`);
+      try {
+        await session.abortTransaction();
+        console.log(`[ProductService] deleteProduct abortTransaction`);
+      } catch (abortError) {
+        console.error(
+          `[ProductService] Error aborting transaction`,
+          abortError,
+        );
+      }
       response.reason = error.message;
     } finally {
-      console.log(`[ProductService] create endSession`);
+      console.log(`[ProductService] deleteProduct endSession`);
       session.endSession();
     }
     return response;
