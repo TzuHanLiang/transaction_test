@@ -10,43 +10,42 @@ import {
 import { ProductService } from './product.service';
 import {
   CreateProductDto,
-  ProductDto,
+  ProductStatus,
   UpdateProductDto,
 } from '../../dtos/product.dto';
+import { IResponse } from 'src/interfaces/iresponse';
 
 @Controller('product')
 export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
   @Get()
-  async findAll(): Promise<ProductDto[]> {
+  async findAll(): Promise<IResponse> {
     return this.productService.findAll();
   }
 
-  @Post('create')
-  async create(
-    @Body() createProductDto: CreateProductDto,
-  ): Promise<ProductDto> {
+  @Post()
+  async create(@Body() createProductDto: CreateProductDto): Promise<IResponse> {
     return this.productService.create({
       ...createProductDto,
+      status: ProductStatus.AVAILABLE,
       createdAt: new Date(),
     });
   }
 
-  @Put('update/:productId')
+  @Put('/:productId')
   async update(
     @Param('productId') productId: string,
     @Body() updateProductDto: UpdateProductDto,
-  ): Promise<ProductDto> {
+  ): Promise<IResponse> {
     return this.productService.update(productId, {
       ...updateProductDto,
       updateAt: new Date(),
     });
   }
 
-  @Delete('delete/:productId')
-  async delete(@Param('productId') productId: string): Promise<string> {
-    await this.productService.delete(productId);
-    return 'Product deleted successfully';
+  @Delete('/:productId')
+  async delete(@Param('productId') productId: string): Promise<IResponse> {
+    return await this.productService.delete(productId);
   }
 }

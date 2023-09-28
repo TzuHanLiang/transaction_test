@@ -6,6 +6,7 @@ export enum ProductStatus {
 }
 
 export class ProductEntity {
+  _id?: string;
   name: string;
   description: string;
   start_price: number;
@@ -19,6 +20,7 @@ export class ProductEntity {
 
 export const convertEntityToDto = (entity: ProductEntity): ProductDto => {
   return {
+    id: entity._id,
     name: entity.name,
     description: entity.description,
     startPrice: entity.start_price,

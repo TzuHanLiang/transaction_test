@@ -3,8 +3,8 @@ import {
   NotFoundException,
   BadRequestException,
 } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { InjectConnection, InjectModel } from '@nestjs/mongoose';
+import { Connection, Model } from 'mongoose';
 import { AuctionQuote } from '../../schemas/auction_quote.schema';
 import { Product } from '../../schemas/product.schema';
 import {
@@ -23,6 +23,7 @@ import { TradingRecordDto } from 'src/dtos/trading_record.dto';
 @Injectable()
 export class AuctionQuoteService {
   constructor(
+    @InjectConnection() private readonly connection: Connection,
     @InjectModel(Product.name) private productModel: Model<Product>,
     @InjectModel(TradingRecord.name)
     private tradingRecordModel: Model<TradingRecord>,
@@ -34,6 +35,8 @@ export class AuctionQuoteService {
     productId: string,
     createQuoteDto: CreateAuctionQuoteDto,
   ): Promise<IResponse> {
+    const session = await this.connection.startSession();
+    session.startTransaction();
     const response: IResponse = {
       success: false,
       code: Code.FAILURE,
@@ -62,7 +65,7 @@ export class AuctionQuoteService {
           timestamp: new Date(),
         }),
       );
-      auctionQuote = convertEntityToDto(await createdQuote.save());
+      auctionQuote = convertEntityToDto(await createdQuote.save({ session }));
 
       product.highest_quote = createQuoteDto.amount;
 
@@ -75,14 +78,24 @@ export class AuctionQuoteService {
           final_price: createQuoteDto.amount,
           timestamp: new Date(),
         });
-        tradingRecord = convertTradingRecordToDto(await record.save());
+        tradingRecord = convertTradingRecordToDto(
+          await record.save({ session }),
+        );
       }
-      await product.save();
+      await product.save({ session });
+      await session.commitTransaction();
+
       response.success = true;
       response.code = Code.SUCCESS;
       response.data = { auctionQuote, tradingRecord };
-    } catch (err) {
-      response.reason = err.message;
+    } catch (error) {
+      console.log(`[AuctionQuoteService] createQuote error`, error);
+      await session.abortTransaction();
+      console.log(`[AuctionQuoteService] createQuote abortTransaction`);
+      response.reason = error.message;
+    } finally {
+      session.endSession();
+      console.log(`[AuctionQuoteService] createQuote endSession`);
     }
     return response;
   }

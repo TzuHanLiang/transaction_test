@@ -19,12 +19,14 @@ export class UpdateProductDto {
   readonly name?: string;
   readonly description?: string;
   readonly startPrice?: number;
-  readonly status?: string;
+  readonly reservePrice?: number;
+  readonly status?: ProductStatus;
   readonly highestQuote?: number;
   updateAt?: Date;
 }
 
 export class ProductDto {
+  id: string;
   name: string;
   description: string;
   startPrice: number;
@@ -35,6 +37,34 @@ export class ProductDto {
   createdAt: Date;
   updateAt: Date;
 }
+
+export const convertCreateDtoToEntity = (
+  dto: CreateProductDto,
+): ProductEntity => {
+  return {
+    name: dto.name,
+    description: dto.description,
+    start_price: dto.startPrice,
+    reserve_price: dto.reservePrice,
+    highest_quote: 0,
+    status: dto.status,
+    seller_id: dto.sellerId,
+    created_at: dto.createdAt,
+    updated_at: dto.createdAt,
+  };
+};
+
+export const convertUpdateDtoToEntity = (dto: UpdateProductDto) => {
+  return {
+    name: dto.name,
+    description: dto.description,
+    start_price: dto.startPrice,
+    reserve_price: dto.reservePrice,
+    highest_quote: 0,
+    status: dto.status,
+    updated_at: dto.updateAt,
+  };
+};
 
 export const convertDtoToEntity = (dto: ProductDto): ProductEntity => {
   return {

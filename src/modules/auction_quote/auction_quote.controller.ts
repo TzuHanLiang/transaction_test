@@ -14,7 +14,7 @@ import { IResponse } from 'src/interfaces/iresponse';
 export class AuctionQuoteController {
   constructor(private readonly auctionQuoteService: AuctionQuoteService) {}
 
-  @Post('create/:productId')
+  @Post('/:productId')
   async create(
     @Param('productId') productId: string,
     @Body() createQuoteDto: CreateAuctionQuoteDto,
