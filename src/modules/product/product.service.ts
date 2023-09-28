@@ -64,13 +64,15 @@ export class ProductService {
       );
       const result = await createdProduct.save({ session });
       console.log(`[ProductService] create result`, result);
-      await session.commitTransaction();
+      // Throw an error to test transaction rollback
+      // throw new Error('This is a test error');
       response.success = true;
       response.code = Code.SUCCESS;
       response.data = convertEntityToDto({
         ...result['_doc'],
         _id: result._id.toString(),
       });
+      await session.commitTransaction();
     } catch (error) {
       console.log(`[ProductService] create error`, error);
       await session.abortTransaction();
@@ -100,13 +102,15 @@ export class ProductService {
         convertUpdateDtoToEntity(updateProductDto),
         { new: true, session },
       );
-      await session.commitTransaction();
+      // Throw an error to test transaction rollback
+      // throw new Error('This is a test error');
       response.success = true;
       response.code = Code.SUCCESS;
       response.data = convertEntityToDto({
         ...updatedProduct['_doc'],
         _id: updatedProduct._id.toString(),
       });
+      await session.commitTransaction();
     } catch (error) {
       console.log(`[ProductService] update error`, error);
       await session.abortTransaction();
@@ -129,10 +133,12 @@ export class ProductService {
     session.startTransaction();
     try {
       await this.productModel.findByIdAndDelete(productId).session(session);
-      await session.commitTransaction();
+      // Throw an error to test transaction rollback
+      // throw new Error('This is a test error');
       response.success = true;
       response.code = Code.SUCCESS;
       response.reason = 'Product deleted successfully';
+      await session.commitTransaction();
     } catch (error) {
       console.log(`[ProductService] delete error`, error);
       await session.abortTransaction();

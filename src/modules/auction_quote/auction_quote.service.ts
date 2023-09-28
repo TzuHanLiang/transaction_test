@@ -83,11 +83,13 @@ export class AuctionQuoteService {
         );
       }
       await product.save({ session });
-      await session.commitTransaction();
+      // Throw an error to test transaction rollback
+      // throw new Error('This is a test error');
 
       response.success = true;
       response.code = Code.SUCCESS;
       response.data = { auctionQuote, tradingRecord };
+      await session.commitTransaction();
     } catch (error) {
       console.log(`[AuctionQuoteService] createQuote error`, error);
       await session.abortTransaction();
